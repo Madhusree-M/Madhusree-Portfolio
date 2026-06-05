@@ -1,4 +1,5 @@
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import "./globals.css";
 
 function RootLayout({
@@ -13,6 +14,7 @@ function RootLayout({
         <div className="">
           {children}
         </div>
+        <Footer />
       </body>
     </html>
   );

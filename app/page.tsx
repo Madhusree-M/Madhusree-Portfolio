@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 function Home() {
   // Contact Form State
@@ -15,6 +15,51 @@ function Home() {
 
   // Clipboard toast states
   const [toastMessage, setToastMessage] = useState("");
+
+  // Horizontal Scroll Refs
+  const containerRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!containerRef.current || !trackRef.current) return;
+      const container = containerRef.current;
+      const track = trackRef.current;
+
+      const rect = container.getBoundingClientRect();
+      const scrollTop = window.scrollY;
+      const containerTop = scrollTop + rect.top;
+      const containerHeight = container.offsetHeight;
+      const viewportHeight = window.innerHeight;
+
+      const start = containerTop;
+      const end = containerTop + containerHeight - viewportHeight;
+
+      let r = 0;
+      if (scrollTop < start) {
+        r = 0;
+      } else if (scrollTop > end) {
+        r = 1;
+      } else {
+        r = (scrollTop - start) / (end - start);
+      }
+
+      const maxTranslate = track.scrollWidth - window.innerWidth;
+      const translateX = r * Math.max(0, maxTranslate);
+
+      track.style.transform = `translate3d(-${translateX}px, 0, 0)`;
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("resize", handleScroll);
+    // Initial call
+    handleScroll();
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleScroll);
+    };
+  }, []);
 
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
@@ -171,11 +216,11 @@ function Home() {
       name: "React",
       svg: (
         <svg className="w-12 h-12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <circle cx="12" cy="12" r="2" fill="currentColor"/>
-          <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" className="hidden"/>
-          <ellipse cx="12" cy="12" rx="10" ry="3.8" transform="rotate(30 12 12)"/>
-          <ellipse cx="12" cy="12" rx="10" ry="3.8" transform="rotate(90 12 12)"/>
-          <ellipse cx="12" cy="12" rx="10" ry="3.8" transform="rotate(150 12 12)"/>
+          <circle cx="12" cy="12" r="2" fill="currentColor" />
+          <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" className="hidden" />
+          <ellipse cx="12" cy="12" rx="10" ry="3.8" transform="rotate(30 12 12)" />
+          <ellipse cx="12" cy="12" rx="10" ry="3.8" transform="rotate(90 12 12)" />
+          <ellipse cx="12" cy="12" rx="10" ry="3.8" transform="rotate(150 12 12)" />
         </svg>
       ),
     },
@@ -183,7 +228,7 @@ function Home() {
       name: "Next.js",
       svg: (
         <svg className="w-12 h-12" viewBox="0 0 24 24" fill="currentColor">
-          <path fillRule="evenodd" d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1.25 15.5H11.5v-7.147l-3.326 5.3A1 1 0 0 1 7 15.5V9.5h1.75v5.992l3.208-5.112A1.25 1.25 0 0 1 13 10v7.5z" clipRule="evenodd"/>
+          <path fillRule="evenodd" d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1.25 15.5H11.5v-7.147l-3.326 5.3A1 1 0 0 1 7 15.5V9.5h1.75v5.992l3.208-5.112A1.25 1.25 0 0 1 13 10v7.5z" clipRule="evenodd" />
         </svg>
       ),
     },
@@ -215,7 +260,7 @@ function Home() {
 
   return (
     <div className="relative min-h-screen selection:bg-cyan-100 selection:text-cyan-900">
-      
+
       {/* Toast Notification for copying contact details */}
       {toastMessage && (
         <div className="fixed bottom-6 right-6 z-50 bg-cyan-900 text-white px-6 py-3 rounded-2xl shadow-xl border border-cyan-800 animate-bounce transition-all duration-300">
@@ -226,8 +271,11 @@ function Home() {
       {/* HERO SECTION */}
       <section id="home" className="relative z-10 min-h-[calc(100vh-80px)] py-12 px-6 md:px-16 flex flex-col justify-center bg-slate-50">
         {/* Diagonal cyan background block */}
-        <div className="absolute top-0 right-0 h-full w-[40%] bg-cyan-900 hidden lg:block skew-x-[-8deg] origin-top"></div>
-        
+        <div 
+          className="absolute top-0 right-0 h-full w-[50%] bg-cyan-900 hidden lg:block"
+          style={{ clipPath: "polygon(20% 0, 100% 0, 100% 100%, 0 100%)" }}
+        ></div>
+
         <div className="max-w-7xl mx-auto w-full grid lg:grid-cols-12 gap-12 items-center z-10">
           {/* Left Text Column */}
           <div className="lg:col-span-7 flex flex-col justify-center space-y-6">
@@ -239,11 +287,11 @@ function Home() {
                 Madhusree M
               </h1>
             </div>
-            
+
             <p className="text-lg md:text-xl font-semibold text-slate-600 border-l-4 border-cyan-700 pl-4 py-1">
               Full Stack Developer | Competitive Programmer | Passionate Learner
             </p>
-            
+
             <p className="text-slate-600 leading-relaxed text-base max-w-xl">
               I design and build robust web applications using the MERN and Next.js stacks.
               As a computer science student, I love writing clean code, solving complex algorithms,
@@ -260,7 +308,7 @@ function Home() {
                 aria-label="GitHub Profile"
               >
                 <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                  <path fillRule="evenodd" d="M12.006 2a9.847 9.847 0 0 0-6.484 2.44 10.32 10.32 0 0 0-3.393 6.17 10.48 10.48 0 0 0 1.317 6.955 10.045 10.045 0 0 0 5.4 4.418c.504.095.683-.223.683-.494 0-.245-.01-1.052-.014-1.908-2.78.62-3.366-1.21-3.366-1.21a2.711 2.711 0 0 0-1.11-1.5c-.907-.637.07-.621.07-.621.317.044.62.163.885.346.266.183.487.426.647.71.135.253.318.476.538.655a2.079 2.079 0 0 0 2.37.196c.045-.52.27-1.006.635-1.37-2.219-.259-4.554-1.138-4.554-5.07a4.022 4.022 0 0 1 1.031-2.75 3.77 3.77 0 0 1 .096-2.713s.839-.275 2.749 1.05a9.26 9.26 0 0 1 5.004 0c1.906-1.325 2.74-1.05 2.74-1.05.37.858.406 1.828.101 2.713a4.017 4.017 0 0 1 1.029 2.75c0 3.939-2.339 4.805-4.564 5.058a2.471 2.471 0 0 1 .679 1.897c0 1.372-.012 2.477-.012 2.814 0 .272.18.592.687.492a10.05 10.05 0 0 0 5.388-4.421 10.473 10.473 0 0 0 1.313-6.948 10.32 10.32 0 0 0-3.39-6.165A9.847 9.847 0 0 0 12.007 2Z" clipRule="evenodd"/>
+                  <path fillRule="evenodd" d="M12.006 2a9.847 9.847 0 0 0-6.484 2.44 10.32 10.32 0 0 0-3.393 6.17 10.48 10.48 0 0 0 1.317 6.955 10.045 10.045 0 0 0 5.4 4.418c.504.095.683-.223.683-.494 0-.245-.01-1.052-.014-1.908-2.78.62-3.366-1.21-3.366-1.21a2.711 2.711 0 0 0-1.11-1.5c-.907-.637.07-.621.07-.621.317.044.62.163.885.346.266.183.487.426.647.71.135.253.318.476.538.655a2.079 2.079 0 0 0 2.37.196c.045-.52.27-1.006.635-1.37-2.219-.259-4.554-1.138-4.554-5.07a4.022 4.022 0 0 1 1.031-2.75 3.77 3.77 0 0 1 .096-2.713s.839-.275 2.749 1.05a9.26 9.26 0 0 1 5.004 0c1.906-1.325 2.74-1.05 2.74-1.05.37.858.406 1.828.101 2.713a4.017 4.017 0 0 1 1.029 2.75c0 3.939-2.339 4.805-4.564 5.058a2.471 2.471 0 0 1 .679 1.897c0 1.372-.012 2.477-.012 2.814 0 .272.18.592.687.492a10.05 10.05 0 0 0 5.388-4.421 10.473 10.473 0 0 0 1.313-6.948 10.32 10.32 0 0 0-3.39-6.165A9.847 9.847 0 0 0 12.007 2Z" clipRule="evenodd" />
                 </svg>
               </a>
 
@@ -272,8 +320,8 @@ function Home() {
                 aria-label="LinkedIn Profile"
               >
                 <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                  <path fillRule="evenodd" d="M12.51 8.796v1.697a3.738 3.738 0 0 1 3.288-1.684c3.455 0 4.202 2.16 4.202 4.97V19.5h-3.2v-5.072c0-1.21-.244-2.766-2.128-2.766-1.827 0-2.139 1.317-2.139 2.676V19.5h-3.19V8.796h3.168ZM7.2 6.106a1.61 1.61 0 0 1-.988 1.483 1.595 1.595 0 0 1-1.743-.348A1.607 1.607 0 0 1 5.6 4.5a1.601 1.601 0 0 1 1.6 1.606Z" clipRule="evenodd"/>
-                  <path d="M7.2 8.809H4V19.5h3.2V8.809Z"/>
+                  <path fillRule="evenodd" d="M12.51 8.796v1.697a3.738 3.738 0 0 1 3.288-1.684c3.455 0 4.202 2.16 4.202 4.97V19.5h-3.2v-5.072c0-1.21-.244-2.766-2.128-2.766-1.827 0-2.139 1.317-2.139 2.676V19.5h-3.19V8.796h3.168ZM7.2 6.106a1.61 1.61 0 0 1-.988 1.483 1.595 1.595 0 0 1-1.743-.348A1.607 1.607 0 0 1 5.6 4.5a1.601 1.601 0 0 1 1.6 1.606Z" clipRule="evenodd" />
+                  <path d="M7.2 8.809H4V19.5h3.2V8.809Z" />
                 </svg>
               </a>
 
@@ -285,7 +333,7 @@ function Home() {
                 aria-label="Instagram Profile"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 8a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5v8a5 5 0 0 1-5 5H8a5 5 0 0 1-5-5V8Zm5-3a3 3 0 0 0-3 3v8a3 3 0 0 0 3 3h8a3 3 0 0 0 3-3V8a3 3 0 0 0-3-3H8Zm7.597 2.214a1 1 0 0 1 1-1h.01a1 1 0 1 1 0 2h-.01a1 1 0 0 1-1-1ZM12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6Zm-5 3a5 5 0 1 1 10 0 5 5 0 0 1-10 0Z"/>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 8a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5v8a5 5 0 0 1-5 5H8a5 5 0 0 1-5-5V8Zm5-3a3 3 0 0 0-3 3v8a3 3 0 0 0 3 3h8a3 3 0 0 0 3-3V8a3 3 0 0 0-3-3H8Zm7.597 2.214a1 1 0 0 1 1-1h.01a1 1 0 1 1 0 2h-.01a1 1 0 0 1-1-1ZM12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6Zm-5 3a5 5 0 1 1 10 0 5 5 0 0 1-10 0Z" />
                 </svg>
               </a>
             </div>
@@ -349,9 +397,9 @@ function Home() {
                   Building Ideas Into <span className="text-cyan-800">Reality</span>
                 </h2>
               </div>
-              
+
               <p className="text-lg text-slate-600 leading-relaxed">
-                I am a passionate Full Stack Developer and Competitive Programmer pursuing my BE in Computer Science Engineering. 
+                I am a passionate Full Stack Developer and Competitive Programmer pursuing my BE in Computer Science Engineering.
                 I enjoy building modern web interfaces, designing responsive structures, and tackling logic challenges.
               </p>
 
@@ -433,31 +481,37 @@ function Home() {
       </section>
 
       {/* PROJECTS SECTION */}
-      <section id="projects" className="py-24 px-6 md:px-16 bg-white border-t border-slate-100">
-        <div className="max-w-7xl mx-auto space-y-16">
-          <div className="space-y-4">
-            <p className="text-cyan-800 font-bold tracking-[0.25em] text-xs uppercase">
-              Portfolio
-            </p>
-            <h2 className="text-4xl md:text-5xl font-black text-cyan-950">
-              Things I’ve Built
-            </h2>
-            <p className="text-slate-600 max-w-xl text-base">
-              A curated list of web applications showcasing frontend design, MERN integration, and fully responsive layouts.
-            </p>
+      <section id="projects" ref={containerRef} className="relative h-[350vh] bg-white border-t border-slate-100">
+        <div className="sticky top-0 h-screen overflow-hidden flex flex-col justify-center">
+          <div className="max-w-7xl mx-auto w-full px-6 md:px-16 mb-8">
+            <div className="space-y-2">
+              <p className="text-cyan-800 font-bold tracking-[0.25em] text-xs uppercase">
+                Portfolio
+              </p>
+              <h2 className="text-4xl md:text-5xl font-black text-cyan-950">
+                Things I’ve Built
+              </h2>
+              <p className="text-slate-600 max-w-xl text-sm hidden md:block">
+                A curated list of web applications showcasing frontend design, MERN integration, and fully responsive layouts.
+              </p>
+            </div>
           </div>
 
-          <div className="space-y-24">
-            {projects.map((project, index) => {
-              const isEven = index % 2 === 0;
-              return (
+          {/* Horizontal slider container */}
+          <div className="w-full overflow-hidden">
+            <div 
+              ref={trackRef} 
+              className="flex gap-8 md:gap-16 px-6 md:px-[max(4rem,calc((100vw-1280px)/2+64px))] transition-transform duration-100 ease-out"
+              style={{ transform: `translate3d(0, 0, 0)` }}
+            >
+              {projects.map((project) => (
                 <div
                   key={project.number}
-                  className="grid lg:grid-cols-12 gap-12 items-center"
+                  className="w-[88vw] md:w-[78vw] max-w-[1150px] shrink-0 grid lg:grid-cols-12 gap-8 lg:gap-16 items-center bg-slate-50 border border-slate-150 p-8 md:p-12 rounded-[36px] shadow-md transition-all duration-300"
                 >
                   {/* Image Div */}
-                  <div className={`lg:col-span-7 ${isEven ? "lg:order-1" : "lg:order-2"}`}>
-                    <div className="relative group w-full aspect-video rounded-3xl overflow-hidden border-2 border-slate-200 shadow-sm hover:border-cyan-900 transition-all duration-300">
+                  <div className="lg:col-span-7">
+                    <div className="relative group w-full aspect-video rounded-2xl overflow-hidden border border-slate-200 shadow-sm transition-all duration-300">
                       <Image
                         src={project.image}
                         alt={project.title}
@@ -468,17 +522,17 @@ function Home() {
                   </div>
 
                   {/* Content Div */}
-                  <div className={`lg:col-span-5 ${isEven ? "lg:order-2" : "lg:order-1"} space-y-5`}>
+                  <div className="lg:col-span-5 space-y-4 md:space-y-6">
                     <span className="font-mono text-cyan-800 font-bold text-lg">{project.number}</span>
-                    <h3 className="text-3xl font-bold text-cyan-950 leading-tight">
+                    <h3 className="text-3xl md:text-4xl font-extrabold text-cyan-950 leading-tight">
                       {project.title}
                     </h3>
-                    <p className="text-slate-600 leading-relaxed text-sm">
+                    <p className="text-slate-600 leading-relaxed text-base">
                       {project.description}
                     </p>
 
                     {/* Tech List */}
-                    <div className="flex flex-wrap gap-2 pt-2">
+                    <div className="flex flex-wrap gap-2 pt-1">
                       {project.tech.map((techItem) => (
                         <span
                           key={techItem}
@@ -490,7 +544,7 @@ function Home() {
                     </div>
 
                     {/* Links */}
-                    <div className="flex gap-4 pt-4">
+                    <div className="flex gap-4 pt-2">
                       <a
                         href={project.live}
                         target="_blank"
@@ -510,8 +564,8 @@ function Home() {
                     </div>
                   </div>
                 </div>
-              );
-            })}
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -541,7 +595,7 @@ function Home() {
                 return (
                   <div key={index} className="relative flex flex-col md:flex-row md:justify-between items-start md:items-center w-full">
                     {/* Desktop layout: Left Card space */}
-                    <div className={`w-full md:w-[45%] ${isEven ? "md:text-right" : "md:order-3"}`}>
+                    <div className={isEven ? "w-full pl-8 md:pl-0 md:w-[45%] md:text-right" : "hidden md:block md:w-[45%]"}>
                       {isEven && (
                         <div className="bg-white border border-slate-150 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow duration-300">
                           <span className="inline-block px-3 py-1 text-xs font-bold bg-cyan-50 text-cyan-900 border border-cyan-100 rounded-full mb-3">
@@ -560,7 +614,7 @@ function Home() {
                     </div>
 
                     {/* Desktop layout: Right Card space */}
-                    <div className={`w-full md:w-[45%] pl-8 md:pl-0 ${!isEven ? "md:text-left" : ""}`}>
+                    <div className={!isEven ? "w-full pl-8 md:pl-0 md:w-[45%] md:text-left" : "hidden md:block md:w-[45%]"}>
                       {!isEven && (
                         <div className="bg-cyan-900 text-white rounded-2xl p-6 shadow-md hover:shadow-lg transition-shadow duration-300">
                           <span className="inline-block px-3 py-1 text-xs font-bold bg-cyan-850 text-cyan-200 border border-cyan-800 rounded-full mb-3">
@@ -600,12 +654,12 @@ function Home() {
             <div className="lg:col-span-5 space-y-6">
               <div className="bg-slate-50 border border-slate-100 p-6 rounded-2xl shadow-sm">
                 <h3 className="text-lg font-bold text-cyan-950 mb-4">Contact Information</h3>
-                
+
                 <div className="space-y-4">
                   <div className="flex items-center gap-4 bg-white p-3.5 rounded-xl border border-slate-150">
                     <div className="p-2.5 bg-cyan-50 text-cyan-900 rounded-lg">
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                       </svg>
                     </div>
                     <div className="flex-1 min-w-0">
@@ -625,7 +679,7 @@ function Home() {
                   <div className="flex items-center gap-4 bg-white p-3.5 rounded-xl border border-slate-150">
                     <div className="p-2.5 bg-cyan-50 text-cyan-900 rounded-lg">
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.94.725l.548 2.2a1 1 0 01-.321.988l-1.305.98a10.582 10.582 0 004.872 4.872l.98-1.305a1 1 0 01.988-.321l2.2.548a1 1 0 01.725.94V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.94.725l.548 2.2a1 1 0 01-.321.988l-1.305.98a10.582 10.582 0 004.872 4.872l.98-1.305a1 1 0 01.988-.321l2.2.548a1 1 0 01.725.94V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                       </svg>
                     </div>
                     <div className="flex-1 min-w-0">
@@ -647,7 +701,7 @@ function Home() {
               <div className="bg-cyan-900 text-white p-6 rounded-2xl shadow-sm space-y-4">
                 <h3 className="text-lg font-bold">Collaborations</h3>
                 <p className="text-sm text-cyan-100 leading-relaxed">
-                  I am open to summer internships, full-time developer roles, and open-source contributions. 
+                  I am open to summer internships, full-time developer roles, and open-source contributions.
                   Let's make something amazing together!
                 </p>
               </div>
@@ -656,7 +710,7 @@ function Home() {
             {/* Interactive Form: Right Column */}
             <div className="lg:col-span-7 bg-slate-50 border border-slate-100 p-8 rounded-2xl shadow-sm">
               <h3 className="text-xl font-bold text-cyan-950 mb-6">Send Me a Message</h3>
-              
+
               <form onSubmit={handleFormSubmit} className="space-y-5">
                 <div className="grid md:grid-cols-2 gap-5">
                   <div className="space-y-2">
@@ -672,7 +726,7 @@ function Home() {
                       className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:border-cyan-800 focus:outline-none transition-colors duration-200 text-slate-800 font-medium text-sm"
                     />
                   </div>
-                  
+
                   <div className="space-y-2">
                     <label htmlFor="email" className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Your Email *</label>
                     <input

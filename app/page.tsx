@@ -12,6 +12,7 @@ function Home() {
     message: "",
   });
   const [formStatus, setFormStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
+  const [formStatusMessage, setFormStatusMessage] = useState("");
 
   // Clipboard toast states
   const [toastMessage, setToastMessage] = useState("");
@@ -72,19 +73,39 @@ function Home() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleFormSubmit = (e: React.FormEvent) => {
+  const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.email || !formData.message) {
       setFormStatus("error");
+      setFormStatusMessage("Please fill in all required fields.");
       return;
     }
     setFormStatus("sending");
-    // Simulate API request
-    setTimeout(() => {
+    setFormStatusMessage("");
+
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const result = (await response.json().catch(() => ({}))) as { error?: string };
+
+      if (!response.ok) {
+        throw new Error(result.error || "Unable to send your message right now.");
+      }
+
       setFormStatus("success");
+      setFormStatusMessage("Message sent successfully! I'll get back to you soon.");
       setFormData({ name: "", email: "", subject: "", message: "" });
       setTimeout(() => setFormStatus("idle"), 5000);
-    }, 1200);
+    } catch (error) {
+      setFormStatus("error");
+      setFormStatusMessage(error instanceof Error ? error.message : "Unable to send your message right now.");
+    }
   };
 
   const scrollIntoSection = (id: string) => {
@@ -271,7 +292,7 @@ function Home() {
       {/* HERO SECTION */}
       <section id="home" className="relative z-10 min-h-[calc(100vh-80px)] py-12 px-6 md:px-16 flex flex-col justify-center bg-slate-50">
         {/* Diagonal cyan background block */}
-        <div 
+        <div
           className="absolute top-0 right-0 h-full w-[50%] bg-cyan-900 hidden lg:block"
           style={{ clipPath: "polygon(20% 0, 100% 0, 100% 100%, 0 100%)" }}
         ></div>
@@ -281,7 +302,7 @@ function Home() {
           <div className="lg:col-span-7 flex flex-col justify-center space-y-6">
             <div className="space-y-3">
               <p className="text-cyan-800 font-bold tracking-[0.2em] text-sm uppercase">
-                Hello, I'm
+                Hello, I&apos;m
               </p>
               <h1 className="text-5xl md:text-7xl font-black text-cyan-950 leading-none">
                 Madhusree M
@@ -325,7 +346,7 @@ function Home() {
                 </svg>
               </a>
 
-              <a
+              {/* <a
                 href="https://www.instagram.com/__madhusree__"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -335,7 +356,7 @@ function Home() {
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M3 8a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5v8a5 5 0 0 1-5 5H8a5 5 0 0 1-5-5V8Zm5-3a3 3 0 0 0-3 3v8a3 3 0 0 0 3 3h8a3 3 0 0 0 3-3V8a3 3 0 0 0-3-3H8Zm7.597 2.214a1 1 0 0 1 1-1h.01a1 1 0 1 1 0 2h-.01a1 1 0 0 1-1-1ZM12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6Zm-5 3a5 5 0 1 1 10 0 5 5 0 0 1-10 0Z" />
                 </svg>
-              </a>
+              </a> */}
             </div>
 
             {/* CTAs */}
@@ -347,7 +368,7 @@ function Home() {
                 Contact Me
               </button>
               <a
-                href="/Madhusree_Resume.pdf"
+                href="/Madhusree.M-Resume.pdf"
                 download="Madhusree_Resume.pdf"
                 className="px-8 py-4 border-2 border-cyan-900 text-cyan-900 font-semibold rounded-2xl hover:bg-cyan-900/5 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 inline-block text-center"
               >
@@ -499,8 +520,8 @@ function Home() {
 
           {/* Horizontal slider container */}
           <div className="w-full overflow-hidden">
-            <div 
-              ref={trackRef} 
+            <div
+              ref={trackRef}
               className="flex gap-8 md:gap-16 px-6 md:px-[max(4rem,calc((100vw-1280px)/2+64px))] transition-transform duration-100 ease-out"
               style={{ transform: `translate3d(0, 0, 0)` }}
             >
@@ -642,7 +663,7 @@ function Home() {
               Get In Touch
             </p>
             <h2 className="text-4xl md:text-5xl font-black text-cyan-950">
-              Let's Connect
+              Let&apos;s Connect
             </h2>
             <p className="text-slate-600 max-w-xl mx-auto text-sm">
               Feel free to drop a message, reach out by phone, or find me on professional networks.
@@ -702,7 +723,7 @@ function Home() {
                 <h3 className="text-lg font-bold">Collaborations</h3>
                 <p className="text-sm text-cyan-100 leading-relaxed">
                   I am open to summer internships, full-time developer roles, and open-source contributions.
-                  Let's make something amazing together!
+                  Let&apos;s make something amazing together!
                 </p>
               </div>
             </div>
@@ -779,13 +800,13 @@ function Home() {
 
                 {formStatus === "success" && (
                   <div className="p-4 bg-emerald-50 border border-emerald-150 text-emerald-900 rounded-xl text-center font-semibold text-sm animate-pulse">
-                    ✓ Message sent successfully! I'll get back to you soon.
+                    {formStatusMessage}
                   </div>
                 )}
 
                 {formStatus === "error" && (
                   <div className="p-4 bg-rose-50 border border-rose-150 text-rose-900 rounded-xl text-center font-semibold text-sm">
-                    ✗ Please fill in all required fields.
+                    {formStatusMessage}
                   </div>
                 )}
               </form>
